@@ -1,0 +1,11 @@
+---
+- name: ElasticSearch | Register numer of files in backup
+  shell: "find . -type f | wc -l"
+  args:
+    chdir: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}/elasticsearch/"
+  register: es_find
+
+- name: ElasticSearch | Fail when no files found
+  fail:
+    msg: "No files backed up"
+  when: es_find.stdout|int == 0

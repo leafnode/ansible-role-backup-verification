@@ -1,0 +1,85 @@
+---
+- name: Install aws command line tool
+  pip:
+    name: awscli
+
+- name: Create temporary folder
+  file:
+    state: directory
+    path: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}"
+
+- name: Copy backup file from directory
+  shell: "cp {{ backup_directory }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
+  when: backup_to_directory == true
+
+- name: Get backup from S3
+  shell: "AWS_ACCESS_KEY_ID={{ backup_s3_aws_access_key }} AWS_SECRET_ACCESS_KEY={{ backup_s3_aws_secret_key }} aws s3 cp s3://{{ backup_s3_bucket }}{{ backup_s3_target_dir }}/{{ timestamp.stdout }}/backup.tar.gz.gpg {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
+  when: backup_to_s3 == true
+
+- name: Get backup from Azure
+  shell: "azcopy --quiet --source-key {{ backup_azure_access_key }} --source https://{{ backup_azure_storage_account }}.blob.core.windows.net/{{ backup_azure_container }}/{{ backup_azure_target_dir }}/{{ timestamp.stdout }}/backup.tar.gz.gpg --destination {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
+  when: backup_to_azure == true
+
+- name: Decrypt backup archive with gpg
+  shell: "gpg --passphrase={{ backup_gpg_passphrase }} {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
+
+- name: Decompress archive
+  shell: "tar  -zxvf {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz"
+  args:
+    chdir: "{{ backup_tmp_path }}"
+
+- name: Generate list of files in backup
+  command: "find . -type f -exec ls -l {} \\;"
+  args:
+    chdir: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}"
+  register: file_list
+
+- name: Echo the list of files
+  debug:
+    msg: "{{ file_list.stdout_lines }}"
+
+- name: Include PostgreSQL backup tasks
+  include_tasks: postgresql.yml
+  when: backup_postgresql == true
+  with_items: "{{ backup_postgresql_dbs }}"
+  loop_control:
+    loop_var: backup_db
+
+- name: Include Redis backup tasks
+  include: redis.yml
+  when: backup_redis == true
+
+- name: Include Mysql backup tasks
+  include: mysql.yml
+  when: backup_mysql == true
+
+- name: Include MongoDB backup tasks
+  include: mongodb.yml
+  when: backup_mongodb == true
+
+- name: Include ElasticSearch backup tasks
+  include: elasticsearch.yml
+  when: backup_elasticsearch == true
+
+- name: Include files backup tasks
+  include: files.yml
+  when: backup_files == true
+
+- name: Cleanup
+  debug:
+    msg: "### Cleanup ###"
+
+- name: Remove backup tmp folder
+  file:
+    path: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}"
+    state: absent
+
+- name: Remove not encrypted backup archive
+  file:
+    path: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz"
+    state: absent
+
+- name: Remove encrypted backup archive
+  file:
+    path: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
+    state: absent

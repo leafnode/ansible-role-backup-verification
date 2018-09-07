@@ -1,0 +1,15 @@
+---
+- name: Redis | Register backup file state
+  stat:
+    path: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}/redis/dump.rdb"
+  register: backup_state
+
+- name: Redis | Fail when backup was not created
+  fail:
+    msg: "Backup file was not created"
+  when: backup_state.stat.exists == false
+
+- name: Redis | Fail when file is empty
+  fail:
+    msg: "Backup file is empty"
+  when: backup_state.stat.size == 0

@@ -1,0 +1,4 @@
+---
+- name: Files | Check if files were copied
+  shell: "stat {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}/files/{{ item.dest_name }}"
+  with_items: "{{ backup_files_paths }}"
