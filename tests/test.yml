@@ -1,5 +1,9 @@
 ---
 - hosts: localhost
   remote_user: root
+  pre_tasks:
+  - name: Register timestamp variable
+    shell: date +%Y_%m_%d_%H_%M_%S
+    register: timestamp
   roles:
     - ansible-role-backup-verification
