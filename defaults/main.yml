@@ -4,10 +4,11 @@ backup_pre_commands: []
 backup_post_commands: []
 
 backup_postgresql: false
-backup_postgresql_db: ""
+backup_postgresql_dbs: []
 backup_postgresql_user: ""
 backup_postgresql_pass: ""
 backup_postgresql_host: 'localhost'
+backup_postgres_size_threshold: 1000000
 backup_postgresql_backup_file_name: "backup.sql.gz"
 
 backup_mysql: false
@@ -26,9 +27,9 @@ backup_mongodb_backup_file_name: "mongodb_backup"
 backup_mongodb_admin_db: admin
 backup_mongodb_backup_user: backup
 backup_mongodb_backup_pass: ""
-backup_mongodb_db: dbname
+backup_mongodb_db: database
 backup_mongodb_user: username
-backup_mongodb_pass: ""
+backup_mongodb_pass: secret
 
 backup_files: false
 backup_files_paths: []
@@ -38,7 +39,18 @@ backup_folder_prefix: ""
 
 backup_gpg_passphrase: "CHANGE_ME_AND_ADD_TO_VAULT"
 
+backup_to_s3: false
 backup_s3_bucket: "BACKUP_BUCKET_NAME"
 backup_s3_aws_access_key: "CHANGE_ME"
 backup_s3_aws_secret_key: "CHANGE_ME"
 backup_s3_target_dir: "/change-me"
+
+backup_to_directory: false
+backup_directory: "/var/backup"
+backup_max_keep_files: false    # number of last files to keep or false to disable
+
+backup_to_azure: false
+backup_azure_container: "change-me"
+backup_azure_storage_account: "change-me"
+backup_azure_access_key: "change-me"
+backup_azure_target_dir: "/change-me"
