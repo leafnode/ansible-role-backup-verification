@@ -1,4 +1,9 @@
 ---
+- name: Install hashdeep
+  apt:
+    name: hashdeep
+    state: present
+
 - name: Install aws command line tool
   pip:
     name: awscli
@@ -12,12 +17,24 @@
   shell: "cp {{ backup_directory }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
   when: backup_to_directory == true
 
+- name: Copy manifest from directory
+  shell: "cp {{ backup_directory }}/manifest-{{ timestamp.stdout }} {{ backup_tmp_path }}/manifest-{{ timestamp.stdout }}"
+  when: backup_to_directory == true
+
 - name: Get backup from S3
   shell: "AWS_ACCESS_KEY_ID={{ backup_s3_aws_access_key }} AWS_SECRET_ACCESS_KEY={{ backup_s3_aws_secret_key }} aws s3 cp s3://{{ backup_s3_bucket }}{{ backup_s3_target_dir }}/{{ timestamp.stdout }}/backup.tar.gz.gpg {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
   when: backup_to_s3 == true
 
+- name: Get manifest from S3
+  shell: "AWS_ACCESS_KEY_ID={{ backup_s3_aws_access_key }} AWS_SECRET_ACCESS_KEY={{ backup_s3_aws_secret_key }} aws s3 cp s3://{{ backup_s3_bucket }}{{ backup_s3_target_dir }}/{{ timestamp.stdout }}/manifest.txt {{ backup_tmp_path }}/manifest-{{ timestamp.stdout }}"
+  when: backup_to_s3 == true
+
 - name: Get backup from Azure
   shell: "azcopy --quiet --source-key {{ backup_azure_access_key }} --source https://{{ backup_azure_storage_account }}.blob.core.windows.net/{{ backup_azure_container }}/{{ backup_azure_target_dir }}/{{ timestamp.stdout }}/backup.tar.gz.gpg --destination {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
+  when: backup_to_azure == true
+
+- name: Get manifest from Azure
+  shell: "azcopy --quiet --source-key {{ backup_azure_access_key }} --source https://{{ backup_azure_storage_account }}.blob.core.windows.net/{{ backup_azure_container }}/{{ backup_azure_target_dir }}/{{ timestamp.stdout }}/manifest.txt --destination {{ backup_tmp_path }}/manifest-{{ timestamp.stdout }}"
   when: backup_to_azure == true
 
 - name: Decrypt backup archive with gpg
@@ -33,6 +50,9 @@
   args:
     chdir: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}"
   register: file_list
+
+- name: Check backup manifest
+  command: "hashdeep -r -a -k {{ backup_tmp_path }}/manifest-{{ timestamp.stdout }} {{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}"
 
 - name: Echo the list of files
   debug:
@@ -82,4 +102,9 @@
 - name: Remove encrypted backup archive
   file:
     path: "{{ backup_tmp_path }}/{{ backup_folder_prefix }}{{ timestamp.stdout }}.tar.gz.gpg"
+    state: absent
+
+- name: Remove manifest
+  file:
+    path: "{{ backup_tmp_path }}/manifest-{{ timestamp.stdout }}"
     state: absent

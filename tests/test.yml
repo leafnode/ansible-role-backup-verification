@@ -1,9 +1,17 @@
 ---
 - hosts: localhost
   remote_user: root
+  vars:
+    backup_folder_prefix: "test_"
+    backup_to_directory: true
+    backup_files: true
+    backup_files_paths:
+      - src: /var/log
+        dest_name: logs
   pre_tasks:
   - name: Register timestamp variable
     shell: date +%Y_%m_%d_%H_%M_%S
     register: timestamp
   roles:
+    - backup
     - ansible-role-backup-verification
