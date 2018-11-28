@@ -1,5 +1,2 @@
 ---
-- src: https://github.com/iroquoisorg/ansible-role-backup.git
-  name: backup
-  version: master
-  scm: git
+- src: iroquoisorg.backup
