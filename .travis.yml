@@ -26,3 +26,6 @@ script:
 
   # Run the role/playbook with ansible-playbook.
   - "ansible-playbook -i tests/inventory tests/$SITE --connection=local --become"
+
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/
