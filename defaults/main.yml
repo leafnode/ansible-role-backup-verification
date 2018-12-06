@@ -8,7 +8,7 @@ backup_postgresql_dbs: []
 backup_postgresql_user: ""
 backup_postgresql_pass: ""
 backup_postgresql_host: 'localhost'
-backup_postgres_size_threshold: 1000000
+backup_postgresql_size_threshold: 1000000
 backup_postgresql_backup_file_name: "backup.sql.gz"
 
 backup_mysql: false

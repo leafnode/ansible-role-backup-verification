@@ -12,4 +12,4 @@
 - name: PostgreSQL | Fail if the file is too small
   fail:
     msg: "Backup file is too small"
-  when: backup_state.stat.size < backup_postgres_size_threshold
+  when: backup_state.stat.size < backup_postgresql_size_threshold

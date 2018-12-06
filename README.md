@@ -1,6 +1,6 @@
 # backup-verification
 
-[![Build Status](https://travis-ci.com/iroquoisorg/ansible-role-backup-verification.svg?branch=master)](https://travis-ci.com/iroquoisorg/ansible-role-memcached)
+[![Build Status](https://travis-ci.com/iroquoisorg/ansible-role-backup-verification.svg?branch=master)](https://travis-ci.com/iroquoisorg/ansible-role-backup-verification)
 
 Ansible role for backup-verification
 
@@ -23,7 +23,7 @@ backup_postgresql_dbs: []
 backup_postgresql_user: ""
 backup_postgresql_pass: ""
 backup_postgresql_host: 'localhost'
-backup_postgres_size_threshold: 1000000
+backup_postgresql_size_threshold: 1000000
 backup_postgresql_backup_file_name: "backup.sql.gz"
 
 backup_mysql: false
@@ -71,3 +71,7 @@ backup_azure_access_key: "change-me"
 backup_azure_target_dir: "/change-me"
 
 ```
+
+# Development
+
+Please check [development guide](DEVELOPMENT.md) for details about developing and testing this role.
